@@ -14,6 +14,26 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
+---------------------------------- Tugas 8 ----------------------------------
+1. Navigator.push() vs Navigator.pushReplacement()
+    Menggunakan Navigator.push() berarti kita menambahkan route baru ke stack (jadi kayak kita push halaman baru terus timpa halaman yang lama) sehingga route yang baru itu ada di halaman paling atas stack dan bisa dilihat user. Kalau Navigator.pushReplacement() itu menghapus route yang saat ini lagi ditampilin dan digantikan dengan route yang baru. Jadi, route lama (yang paling terakhir diakses) digantikan langsung sama route baru.
+    Dalam kasus apa kedua navigator itu digunakan?
+    Navigator.push() cocok digunakan kalau di halaman yang baru mau kita tambahin ada button back atau button untuk kembali ke halaman sebelumnya karena Navigator.push() kan tidak menghapus halaman sebelumnya sehingga memungkinkan pengguna untuk kembali. Contoh saat kita isi New Product Form itu ada button back kalau user tidak jadi isi formnyaa, jadi balik ke halaman sebelum form itu dipanggil. Navigator.pushReplacement() cocok digunakan kalau misal user setelah login pindah ke main page. Karena user udah berhasil login jadi harusnya user ga perlu ada button back untuk ke login page lagi. Jadi, langsung aja direplace sama route yang ke main page.
+
+2. Bagaimana memanfaatkan hierarki widget?
+    Di project football shop ini, scaffold digunakan sebagai widget terluar buat setiap page yang kita buat karena scaffold menjadi struktur atau kerangka dasar dari halaman tersebut sehingga ini juga bisa membuat halaman lain seragam gitu secara ukuran. 
+    Untuk AppBar itu dijadikan child dari Scaffold (di menu.dart) jadi dia ada di bahian paling atas Scaffold. Hierarki ini membuat AppBar ada di dalam Scaffold dan ukurannya ga melebihi Scaffold. Sama halnya dengan drawer, di sini drawer juga ada di Scaffold sebagai child. Karena kedua child ini di dalam Scaffold, jadi ukuran mereka juga konsisten setiap pemanggilan.
+
+3. Kelebihan layout widget saat membuat form:
+    a. Padding: kasih jarak ke tepi halaman, jadi widget text field atau button ga langsung menempel ke tepian sehingga desain terlihat lebih leluasa dan rapi.
+    Contoh di setiap input, misal product name, itu idbungkus di dalam padding -> padding: const EdgeInsets.all(8.0) dimana ada spasi 8 piksel di sekeliling setiap field
+    b. SingleChildScrollView: membungkus column yang berisi semua field form jadi content di dalamnya (bagian body) bisa discroll.
+    Contoh: di form.dart, Column yang berisi semua field data yang harus diisi user, diwrap di dalam SingleChildScrollView
+    c. ListView: fungsinya mirip dengan SingleChildScrollView, tetapi ListView didesign untuk display large number of child widgets, kalau SingleChildScrollView, sesuai namanya, hanya bisa wrap 1 child
+
+4. Warna Tema
+    Warna tema diset di main.dart sebagai tempat pusat untuk tema sehingga warnanya konsisten di seluruh app. Jadi di MyApp, didefinisikan ThemeData untuk MaterialApp, digunakan ColorScheme.fromSedd untuk ambil warna hijau khas Soccerholy, jadi nanti flutter otomatis fenerate seluruh color pallete dari seed warna tersebut sehingga warnanya konsisten.
+
 
 ---------------------------------- Tugas 7 ----------------------------------
 1. Flutter Widget Tree
