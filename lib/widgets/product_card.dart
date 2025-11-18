@@ -1,7 +1,10 @@
-
 import 'package:flutter/material.dart';
 import 'package:football_shop/screens/form.dart';
 import 'package:football_shop/screens/menu.dart';
+import 'package:football_shop/screens/product_entry_list.dart';
+import 'package:football_shop/screens/login.dart';
+import 'package:pbp_django_auth/pbp_django_auth.dart';
+import 'package:provider/provider.dart';
 
 class ItemCard extends StatelessWidget {
   // untuk tampilin button
@@ -12,6 +15,7 @@ class ItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final request = context.watch<CookieRequest>();
     return Material(
       color: item.color,                        // ambil warna berdasarkan atribut per itemnya
       borderRadius: BorderRadius.circular(12),  // add border radius untuk setiap card
@@ -32,6 +36,15 @@ class ItemCard extends StatelessWidget {
               MaterialPageRoute(
                 builder: (context) => const ProductForm(),
               ));}
+            
+            else if (item.name == "All Products") {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const ProductEntryListPage()  // all products showing
+                    ),
+                );
+            }
         },
         // container untuk simpan icon and text
         child: Container(

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:football_shop/screens/login.dart';
 import 'package:football_shop/screens/menu.dart';
+import 'package:pbp_django_auth/pbp_django_auth.dart';
+import 'package:provider/provider.dart';
 
 void main() {
   runApp(const MyApp());
@@ -27,24 +30,29 @@ class MyApp extends StatelessWidget {
       seedColor: Color.fromRGBO(117, 167, 24, 1),
     );
 
-    // 2. Return MaterialApp
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        colorScheme: colorScheme,
-        useMaterial3: true,
-        fontFamily: 'Poppins',
+    return Provider(
+      create: (_) {
+        CookieRequest request = CookieRequest(); 
+        return request;
+      },
+      child: MaterialApp(
+        title: 'Flutter Demo',
+        theme: ThemeData(
+          colorScheme: colorScheme,
+          useMaterial3: true,
+          fontFamily: 'Poppins',
 
-        inputDecorationTheme: InputDecorationTheme(
-          labelStyle: TextStyle(
-            fontSize: 14.0,
+          inputDecorationTheme: InputDecorationTheme(
+            labelStyle: TextStyle(
+              fontSize: 14.0,
+            ),
+            hintStyle: TextStyle(
+              fontSize: 14.0, 
+            ),
           ),
-          hintStyle: TextStyle(
-            fontSize: 14.0, 
-          ),
-        ),
-      ),   
-      home: MyHomePage(colorScheme: colorScheme), 
+        ),   
+        home: const LoginPage(), 
+      )
     );
   }
 }

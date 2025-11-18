@@ -14,6 +14,10 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
+
+---------------------------------- Tugas 9 ----------------------------------
+1. Mengapa kita perlu membuat model Dart saat mengambil/mengirim data JSON? Apa konsekuensinya jika langsung memetakan Map<String, dynamic> tanpa model (terkait validasi tipe, null-safety, maintainability)?
+    
 ---------------------------------- Tugas 8 ----------------------------------
 1. Navigator.push() vs Navigator.pushReplacement()
     Menggunakan Navigator.push() berarti kita menambahkan route baru ke stack (jadi kayak kita push halaman baru terus timpa halaman yang lama) sehingga route yang baru itu ada di halaman paling atas stack dan bisa dilihat user. Kalau Navigator.pushReplacement() itu menghapus route yang saat ini lagi ditampilin dan digantikan dengan route yang baru. Jadi, route lama (yang paling terakhir diakses) digantikan langsung sama route baru.

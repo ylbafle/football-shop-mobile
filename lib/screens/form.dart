@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:football_shop/widgets/drawer.dart';
+import 'dart:convert';
+import 'package:provider/provider.dart';
+import 'package:pbp_django_auth/pbp_django_auth.dart';
+import 'package:football_shop/screens/menu.dart';
 
 class ProductForm extends StatefulWidget {
     const ProductForm({super.key});
@@ -10,11 +14,11 @@ class ProductForm extends StatefulWidget {
 
 class _ProductFormState extends State<ProductForm> {
   final _formKey = GlobalKey<FormState>();
-  String _title = "";
+  String _name = "";
   String _desc = "";
   String _category = "jersey"; // default
   String _thumbnail = "";
-  bool _localbrand = false; // default
+  bool _featured = false; // default
   String _price = ""; 
   String _stock = "";
 
@@ -28,7 +32,8 @@ class _ProductFormState extends State<ProductForm> {
 
   @override
   Widget build(BuildContext context) {
-      return Scaffold(
+    final request = context.watch<CookieRequest>();
+    return Scaffold(
         appBar: AppBar(
           title: const Center(
             child: Text(
@@ -56,10 +61,10 @@ class _ProductFormState extends State<ProductForm> {
                         borderRadius: BorderRadius.circular(5.0),
                       ),
                     ),
-                    // onchanged dijalankan setiap ada perubahan isis textformfield
+                    // onchanged dijalankan setiap ada perubahan isi textformfield
                     onChanged: (String? value) {
                       setState(() {
-                        _title = value!;
+                        _name = value!;
                       });
                     },
                     validator: (String? value) {
@@ -223,15 +228,15 @@ class _ProductFormState extends State<ProductForm> {
                   ),
                 ),
 
-                // === Local Product ===
+                // === Is Featured ===
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: SwitchListTile(
-                    title: const Text("Mark as Local Product"),
-                    value: _localbrand,
+                    title: const Text("Mark as Featured Product"),
+                    value: _featured,
                     onChanged: (bool value) {
                       setState(() {
-                        _localbrand = value;
+                        _featured = value;
                       });
                     },
                   ),
@@ -247,46 +252,47 @@ class _ProductFormState extends State<ProductForm> {
                         backgroundColor:
                             MaterialStateProperty.all(Color.fromRGBO(117, 167, 24, 1)),
                       ),
-                      onPressed: () {
+                      child: const Text('Save'),
+                      onPressed: () async {
                         if (_formKey.currentState!.validate()) {
-                          showDialog(
-                            context: context,
-                            builder: (context) {
-                              return AlertDialog(
-                                title: const Text('Berita berhasil disimpan!'),
-                                content: SingleChildScrollView(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Name: $_title'),
-                                      Text('Description: $_desc'),
-                                      Text('Price: $_price'),
-                                      Text('Stock: $_stock'),
-                                      Text('Image: $_thumbnail'),
-                                      Text(
-                                          'Local Product: ${_localbrand ? "Yes" : "No"}'),
-                                    ],
-                                  ),
-                                ),
-                                actions: [
-                                  TextButton(
-                                    child: const Text('OK'),
-                                    onPressed: () {
-                                      Navigator.pop(context);
-                                      _formKey.currentState!.reset();
-                                    },
-                                  ),
-                                ],
-                              );
-                            },
+                          // TODO: Replace the URL with your app's URL
+                          // To connect Android emulator with Django on localhost, use URL http://10.0.2.2/
+                          // If you using chrome,  use URL http://localhost:8000
+                          
+                          final response = await request.postJson(
+                            "http://localhost:8000/create-flutter/",
+                            jsonEncode({
+                              "name": _name,
+                              "description": _desc,
+                              "price": _price,
+                              "stock": _stock,
+                              "thumbnail": _thumbnail,
+                              "category": _category,
+                              "is_featured": _featured,
+                            }),
                           );
+                          if (context.mounted) {
+                            if (response['status'] == 'success') {
+                              ScaffoldMessenger.of(context)
+                                  .showSnackBar(const SnackBar(
+                                content: Text("News successfully saved!"),
+                              ));
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => MyHomePage(colorScheme: ColorScheme.fromSeed(
+                                      seedColor: const Color.fromRGBO(117, 167, 24, 1),
+                                    ),)),
+                              );
+                            } else {
+                              ScaffoldMessenger.of(context)
+                                  .showSnackBar(const SnackBar(
+                                content: Text("Something went wrong, please try again."),
+                              ));
+                            }
+                          }
                         }
                       },
-                      child: const Text(
-                        "Save",
-                        style: TextStyle(color: Colors.white),
-                      ),
                     ),
                   ),
                 ),
