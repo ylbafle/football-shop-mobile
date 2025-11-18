@@ -9,7 +9,8 @@ import 'package:provider/provider.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 
 class ProductEntryListPage extends StatefulWidget {
-  const ProductEntryListPage({super.key});
+  final bool filter;  // filter untuk produk user yang sedang login
+  const ProductEntryListPage({super.key, this.filter = false});
 
   @override
   State<ProductEntryListPage> createState() => _ProductEntryListPageState();
@@ -20,16 +21,27 @@ class _ProductEntryListPageState extends State<ProductEntryListPage> {
     // TODO: Replace the URL with your app's URL and don't forget to add a trailing slash (/)!
     // To connect Android emulator with Django on localhost, use URL http://10.0.2.2/
     // If you using chrome,  use URL http://localhost:8000
-    
     final response = await request.get('http://localhost:8000/json/');
     
     // Decode response to json format
     var data = response;
 
     List<ProductEntry> listProducts = [];
+    String? currentUsername = request.jsonData['username'];
     for (var d in data) {
       if (d != null) {
-        listProducts.add(ProductEntry.fromJson(d));
+        ProductEntry product = ProductEntry.fromJson(d);
+        
+        // filtering
+        if (widget.filter) {
+          // kalau lagi mode "My Products", cek apakah pemiliknya sama dengan user login
+          if (product.userUsername == currentUsername) {
+            listProducts.add(product);
+          }
+        } else {
+          // mode "All Products", masukkan semua
+          listProducts.add(product);
+        }
       }
     }
     return listProducts;

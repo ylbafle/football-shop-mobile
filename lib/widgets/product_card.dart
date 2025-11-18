@@ -45,6 +45,16 @@ class ItemCard extends StatelessWidget {
                     ),
                 );
             }
+            else if (item.name == "My Products") {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const ProductEntryListPage(
+                        filter: true, // buat activate filternya
+                      ),
+                  ),
+              );
+          }
         },
         // container untuk simpan icon and text
         child: Container(
