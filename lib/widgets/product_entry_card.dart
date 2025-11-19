@@ -46,18 +46,26 @@ class ProductEntryCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
 
+                Text(
+                  "Rp ${product.price} | Stock: ${product.stock}",
+                  style: const TextStyle(
+                    fontSize: 15.0, 
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 4), 
+
+
                 // Name
                 Text(
                   product.name,
                   style: const TextStyle(
-                    fontSize: 18.0,
+                    fontSize: 15.0,
                     fontWeight: FontWeight.bold,
+                    color: Color.fromRGBO(117, 167, 24, 1),
                   ),
                 ),
-                const SizedBox(height: 6),
-
-                // Category
-                Text('Category: ${product.category}'),
                 const SizedBox(height: 6),
 
                 // description preview

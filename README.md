@@ -16,8 +16,78 @@ For help getting started with Flutter development, view the
 samples, guidance on mobile development, and a full API reference.
 
 ---------------------------------- Tugas 9 ----------------------------------
-1. Mengapa kita perlu membuat model Dart saat mengambil/mengirim data JSON? Apa konsekuensinya jika langsung memetakan Map<String, dynamic> tanpa model (terkait validasi tipe, null-safety, maintainability)?
-    
+1. Mengapa kita perlu membuat model Dart saat mengambil/mengirim data JSON? 
+    karena model disini berfungsi sebagai blueprint untuk data yang kita punya, misal di tugas ini kita punya data product, maka kita perlu model untuk si product (class ProductEntry) sebagai blueprint dari semua data product yang menyimpan atribut product itu sendiri, yaitu nama, deskripsi, harga, dll.
+    konsekuensinya jika langsung memetakan Map<String, dynamic> tanpa model (terkait validasi tipe, null-safety, maintainability)?
+    Dengan model, kita bisa jamin kalau price itu integer atau name itu String, jika data type salah, aplikasi akan kasih tau errornya dan tidak crash tiba tiba. Model juga membantu kita mendefisinisikan mana data yang wajib ada atau required dan mana yang boleh null dengan bantuan ?. Terkait maintainability, tanpa model, kita harus mengetik string manual setiap kali inisialisasi product baru, seperti data['product_name'] berulang-ulang. Sehingga jika terjadi perubahan di API, kita cukup ubah file product_entry.dart aja atau 1 file model terkait.
+
+2. Apa fungsi package http dan CookieRequest dalam tugas ini? Jelaskan perbedaan peran http vs CookieRequest.
+    - package http ini menjadi tool untuk kita melakukan request, seperti GET atau POST. http ini bersifat stateless, jadi setiap request akan dianggap baru dan tidak membawa ingatan dari login sebelumnya.
+    - CookieRequest dari pbp_django_auth ini serupa dengan http tapi dia punya memori dan ga stateless. Jadi setiap kita berhasil login, session cookies akan disimpan, dan setiap kita request, CookieRequest akan otomatis attach session cookies yang kita punya jadi data kita sebagai user yang lagi login tercatat.
+
+3. Jelaskan mengapa instance CookieRequest perlu untuk dibagikan ke semua komponen di aplikasi Flutter.
+    seperti yang sudah dijelaskan di nomor 2, CookieRequest menyimpan status login kita melalui session cookies. Jika setiap halaman kita declare CookieRequest baru dengan membuat new CookieRequest(), maka halaman tersebut akan dianggap sebagai user baru karena cookiesnya kosong (since kita declare ulang atau tidak pakai cookies yang sudah ada). That's why kita share dia dengan Provider di main.dart, kita make sure ada satu instance tunggal yang handle session cookies dan share cookies untuk halaman lain yang butuh untuk interact dengan server.
+
+4.  Jelaskan konfigurasi konektivitas yang diperlukan agar Flutter dapat berkomunikasi dengan Django. Mengapa kita perlu menambahkan 10.0.2.2 pada ALLOWED_HOSTS, mengaktifkan CORS dan pengaturan SameSite/cookie, dan menambahkan izin akses internet di Android? Apa yang akan terjadi jika konfigurasi tersebut tidak dilakukan dengan benar?
+    Jadi, agar Flutter dan Django bisa saling terhubung atau communicate, kita perlu semacan izin. 10.0.2.2 di ALLOWED_HOSTS membuat Android Emulator menganggap localhost adalah dirinya sendiri dan 10.0.2.2 ini menjadi alamat IP khusus untuk akses server Django dari dalam emulator. Maka, Django harus mengizinkan IP ini agar saat mau diakses tidak ada penolakan akses.
+    CORS atau Cross-Origin Resource Sharing yang kita aktifkan berfungsi untuk memblokir akses data antar-domain dan memastikan bahwa browser kita tau bahwa mengambil data dari Django itu aman.
+    SameSite/cookie ini adalah kebijakan keamanan modern utuk blok pengiriman cookie antar situs (same site). Kita perlu set SameSite='None' agar Flutter bisa kirim session cookie ke Django saat request.
+    Untuk izin akses internet di Andorid (<uses-permission android:name="android.permission.INTERNET" />), ini kita perlu lakukan setting di AndroidManifest.xml karena agar HP diizinkan menggunakan radio internetnya karena secara default, aplkasi android itu isolated atau offline.
+    Jika konfigurasi salah, maka aplikasi akan stuck loading terus menerus atau timeout dan akan muncul error connection refused atau error "403 Forbidden/Unauthorized" karena gagal login.
+
+5.  Jelaskan mekanisme pengiriman data mulai dari input hingga dapat ditampilkan pada Flutter.
+    - user input data di TextFormField pada halaman form (form.dart)
+    - fuction onChanged detect ketikan user dan simpan data input user ke variable lokal dengan setState()
+    - saat user klik tombol save, request.postJson mengubah data variabel hasil input user tadi menjadi format JSON dan dikirim ke URL Django (create-flutter)
+    - Django akan menerima JSON, validate, dan simpan ke database
+    - Di halama ProductEntryListPage, ada fungsi fetchProducts yang memanggil request.get ke endpoint JSON Django (fetch data)
+    - setelah data JJSON diterima, data akan diubah jadi object ProductEntry dan ditampilkan dengan ListView.builder
+
+6. Jelaskan mekanisme autentikasi dari login, register, hingga logout. Mulai dari input data akun pada Flutter ke Django hingga selesainya proses autentikasi oleh Django dan tampilnya menu pada Flutter.
+    - Login:
+        - user input username dan pass di halaman login (login.dart)
+        - saat button login ditekan, fungsi request.login() dari pbp_django_auth dipanggil ke endpoint /auth/login
+        - di Django, fungsi login(request) memanggil authenticate(username, password) untuk cek input dengan data di database. Jika user cocok, Django panggil auth_login(requeset, user), Django akan membuat baris baru di tabel django_session yang berisi ID session dan data user, di header response, Django akan menyisipkan header Set-Cookie yang berisi session ID yang akan dibaca di Flutter nanti
+        - Kalau berhasil, function akan return response JSON berisi data user dan pesan sukses
+        - di Flutter, CookieRequest akan catch sessionid dari header response dan simpan di memori
+        - jika reques.loggedIn bernilai true, user diarahkan ke My HomePage
+    - Akses Menu
+        - di main.dart, CookieRequest dinitiate seklai menggunakan Provide di root aplikasi dan ini membuat instance CookieRequest yang berisi session cookie 
+        - saat user buka halaman menu atau halaman lain, Flutter akan abil instance cookie -> context.watch<CookieRequest>()
+        - setiap user mau reqeust (misal request.get()), CookieRequest akan attach sessionid yang disimpan ke header request
+        - Django menerima request, cek sessiondid dan cocokin ke django_session sehingga nanti Django bisa kasih akses data
+    - Register
+        user input data di form register pada RegisterPage
+        data ditangkap controller, misal username ditangkap sama _usernameController
+        saat tombol ditekan, fungsi request.postJson dipanggil ke endpoint auth/register
+        data username dan password akan diencode ke format JSON sebelum dikirim
+        di Django, fungsi register(request) akan terima request POST dan parse bodey request dari JSON jadi dictionary python dengna json.loads(request.body)
+        setelah itu akan dilakukan validasi username dan password apakah valid dan sesuai
+        jika sesuai dan validasi lolos, Django akan membuat user baru (User.objects.create_user()) dan disimpan ke database
+        kemudian akan direturn JsonResponse dengan status success kembali ke Flutter
+        Flutter akan terima response tersebut dan menampilkan snackbar "successfully resigtered!"
+    - Logout
+        - user menekan tombol logout, Flutter call function request.logout() ke endpoint
+        - di Django, kita pake fungsi bawaan auth_logout, Django akan cari sessionid di database dan hapus session id user tersebut
+        - di Flutter, pbp_django_auth akan delete cookie yang tersimpan di memori aplikasi Flutter, status loggedIn menjadi false.
+        - dengan pushReplacement, user diarahkan ke LoginPage
+
+7. Jelaskan bagaimana cara kamu mengimplementasikan checklist di atas secara step-by-step! (bukan hanya sekadar mengikuti tutorial).
+    - Integrasi Login, Register, dan Logout
+        menambahakan package Provider dan pbp_django_auth di pubspec.yaml
+        modifikasi main.dart agar wrap aplikasi dengan Provider yang menyediakan CookieRequest (agar bisa shared cookie session nanti)
+        membuat login.dart dan register.dart unuk handle input user dan communicate dengan endpoint auth Django (detail langkah telah dijelaskan di nomor 6)
+    - Membuat model custom
+        di file product_entry.dart kita buat class ProductEntry, kita define attribute sesuai dengan JSON Django, seperti name, price, description, dll
+        dari return JSONResponse dari dartt, kita bisa ambil beberapa value dari product kita dan memasukkannya ke setiap properti atau atribute di object Dart kita
+        hal ini memungkinkan kita untuk akses data dengan mudah, misal product.price daripada product['price'] yang lebih sulit
+    - Halaman detail Item (product_detail.dart)
+        halaman ini menerima required this.rpoduct, jadi nanti di halaman ini ga perlu fetch lagi, hanya terima hasil fetch data dari halaman lain dan data akan disusun dengan layout SingleChildScrollView agar tidak overflow
+    - Filter halaman
+        di product_entry_list.dart kita ambil username yang sedang login berdasarkan JSON (request.jsonData['username']), terus di dalama loop ikta check, kalau product ini dicreate sama user yang lagi login, maka kita tambahkan ke list product yang akan kita tampilkan di halaman
+        untuk trigger filtering ini, di product_card.dart (homepage), tombol My Products akan memanggil list product itu dengan parameter filter, builder: (context) => const ProductEntryListPage(filter: true,)
+
+        
 ---------------------------------- Tugas 8 ----------------------------------
 1. Navigator.push() vs Navigator.pushReplacement()
     Menggunakan Navigator.push() berarti kita menambahkan route baru ke stack (jadi kayak kita push halaman baru terus timpa halaman yang lama) sehingga route yang baru itu ada di halaman paling atas stack dan bisa dilihat user. Kalau Navigator.pushReplacement() itu menghapus route yang saat ini lagi ditampilin dan digantikan dengan route yang baru. Jadi, route lama (yang paling terakhir diakses) digantikan langsung sama route baru.
